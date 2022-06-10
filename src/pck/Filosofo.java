@@ -14,10 +14,10 @@ public class Filosofo extends Thread {
 	private long semComer = 0;
 	private long inicioSemComer = 0;
 	private long fimSemComer = 0;
-	private long mediaPensarComer; // tempo que comeu - tempo que pensou
+	private long mediaPensarComer;
 	private long tempoPensar;
 	private long tempoComer;
-	private long tempMaxSemComer = 0; // Comparar entre todos os semComer e ver qual é o maior
+	private long tempMaxSemComer = 0;
 
 	Random random = new Random();
 
@@ -32,7 +32,7 @@ public class Filosofo extends Thread {
 		try {
 			tempo = random.nextInt(499) + 1;
 			Thread.sleep(tempo);
-			// Pegar tempo parou de pensar
+			setTempoPensar(System.currentTimeMillis());
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -62,7 +62,8 @@ public class Filosofo extends Thread {
 	public void comer() {
 		try {
 			setVezesComeu(getVezesComeu() + 1);
-			// Pegar temp pra media pra parar de comer
+			setTempoComer(System.currentTimeMillis());
+			setMediaPensarComer((getTempoComer() - getTempoPensar())/getVezesComeu());
 			tempo = random.nextInt(499) + 1;
 			Thread.sleep(tempo);
 		} catch (InterruptedException e) {
@@ -91,16 +92,12 @@ public class Filosofo extends Thread {
 
 	@Override
 	public void run() {
-		setInicioSemComer(0);
-		setFimSemComer(0);
-		setTempMaxSemComer(0);
 		while (true) {
 			pensar();
 			pegarGarfo();
 			comer();
 			devolverGarfo();
-			System.out.println("Filosofo: " + id + "nao come a: " + getSemComer());
-			System.out.println("Tempo maximo que o filofo : " + id + " nao come: " + getTempMaxSemComer());
+			System.out.println("Filosofo: " + id + "leva em media: " + getMediaPensarComer() + " para pensar e comer");
 		}
 	}
 
@@ -150,6 +147,30 @@ public class Filosofo extends Thread {
 
 	public void setCount(int count) {
 		this.count = count;
+	}
+
+	public long getMediaPensarComer() {
+		return mediaPensarComer;
+	}
+
+	public void setMediaPensarComer(long mediaPensarComer) {
+		this.mediaPensarComer = mediaPensarComer;
+	}
+
+	public long getTempoPensar() {
+		return tempoPensar;
+	}
+
+	public void setTempoPensar(long tempoPensar) {
+		this.tempoPensar = tempoPensar;
+	}
+
+	public long getTempoComer() {
+		return tempoComer;
+	}
+
+	public void setTempoComer(long tempoComer) {
+		this.tempoComer = tempoComer;
 	}
 
 }
