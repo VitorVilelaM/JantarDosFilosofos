@@ -5,29 +5,34 @@ import java.util.Random;
 public class Filosofo extends Thread {
 
 	private int id;
+	private int count = 0;
 	private Semaforo semaforo;
 	private int[] states;
 	private Semaforo[] s;
 	private int tempo;
-	private int vezesComeu; //count++
-	private int semComer; // pegar o tempo da ultima vez q comeu
-	private int mediaPensarComer; //tempo que  comeu - tempo que pensou
-	private int tempoMaximoSemComer; //Comparar entre todos os semComer e ver qual é o maior
-	
+	private int vezesComeu = 0;
+	private long semComer = 0;
+	private long inicioSemComer = 0;
+	private long fimSemComer = 0;
+	private long mediaPensarComer; // tempo que comeu - tempo que pensou
+	private long tempoPensar;
+	private long tempoComer;
+	private long tempMaxSemComer = 0; // Comparar entre todos os semComer e ver qual é o maior
+
 	Random random = new Random();
-	
-	public Filosofo(Semaforo semaforo, int id, int States[], Semaforo semaforos[]){
+
+	public Filosofo(Semaforo semaforo, int id, int States[], Semaforo semaforos[]) {
 		this.id = id;
 		this.semaforo = semaforo;
 		this.states = States;
 		this.s = semaforos;
 	}
-	
-	public void pensar(){
+
+	public void pensar() {
 		try {
-			tempo = random.nextInt(499)+1;
+			tempo = random.nextInt(499) + 1;
 			Thread.sleep(tempo);
-			//Pegar tempo parou de pensar
+			// Pegar tempo parou de pensar
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -35,57 +40,67 @@ public class Filosofo extends Thread {
 
 	public void pegarGarfo() {
 		semaforo.down();
-		System.out.println("Filosofo " + id + ": Pegou o  Garfo 1");
 		states[id] = 1;
 		teste(id);
 		semaforo.up();
 		s[id].down();
-		//Pegar tempo2 da maquina pra semComer
+		setFimSemComer(System.currentTimeMillis());
+		setSemComer(getFimSemComer() - getInicioSemComer());
+		if (count == 0) {
+			count++;
+			setSemComer(0);
+			setTempMaxSemComer(0);
+		}else {
+			setSemComer(getFimSemComer() - getInicioSemComer());
+			if (getTempMaxSemComer() <= getSemComer()) {
+				setTempMaxSemComer(getSemComer());
+			}
+		}
+
 	}
 
 	public void comer() {
 		try {
-			//count++
-			//Pegar temp pra media pra parar de comer
-
-			System.out.println("Filosofo " + id + ": Pegou o  Garfo 2");
-			System.out.println("Filosofo " + id + ": Comendo");
-			tempo = random.nextInt(499)+1;
+			setVezesComeu(getVezesComeu() + 1);
+			// Pegar temp pra media pra parar de comer
+			tempo = random.nextInt(499) + 1;
 			Thread.sleep(tempo);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public void devolverGarfo(){
+	public void devolverGarfo() {
 		semaforo.down();
 		states[id] = 0;
-		teste((id+5-1)%5);
-		teste((id+1)%5);
+		teste((id + 5 - 1) % 5);
+		teste((id + 1) % 5);
 		semaforo.up();
-		System.out.println("Filosofo " + id + ": Devolve os Garfos");
-		//Pegar tempo1 da maquina aqui pra semComer
+		setInicioSemComer(System.currentTimeMillis());
 	}
-	
-	public void teste(int id){
-		int LEFT = (id+5-1)%5;
-		int RIGHT = (id+1)%5;
+
+	public void teste(int id) {
+		int LEFT = (id + 5 - 1) % 5;
+		int RIGHT = (id + 1) % 5;
 
 		if ((states[id] == 1) && (states[LEFT] != 2) && (states[RIGHT] != 2)) {
 			states[id] = 2;
 			s[id].up();
-		}else {
-			System.out.println("Filosofo " + id + ": Não pega o Garfo");
 		}
 	}
-	
+
 	@Override
 	public void run() {
+		setInicioSemComer(0);
+		setFimSemComer(0);
+		setTempMaxSemComer(0);
 		while (true) {
 			pensar();
 			pegarGarfo();
 			comer();
 			devolverGarfo();
+			System.out.println("Filosofo: " + id + "nao come a: " + getSemComer());
+			System.out.println("Tempo maximo que o filofo : " + id + " nao come: " + getTempMaxSemComer());
 		}
 	}
 
@@ -95,6 +110,46 @@ public class Filosofo extends Thread {
 
 	public void setVezesComeu(int vezesComeu) {
 		this.vezesComeu = vezesComeu;
+	}
+
+	public long getSemComer() {
+		return semComer;
+	}
+
+	public void setSemComer(long semComer) {
+		this.semComer = semComer;
+	}
+
+	public long getFimSemComer() {
+		return fimSemComer;
+	}
+
+	public void setFimSemComer(long fimSemComer) {
+		this.fimSemComer = fimSemComer;
+	}
+
+	public long getInicioSemComer() {
+		return inicioSemComer;
+	}
+
+	public void setInicioSemComer(long inicioSemComer) {
+		this.inicioSemComer = inicioSemComer;
+	}
+
+	public long getTempMaxSemComer() {
+		return tempMaxSemComer;
+	}
+
+	public void setTempMaxSemComer(long tempMaxSemComer) {
+		this.tempMaxSemComer = tempMaxSemComer;
+	}
+
+	public int getCount() {
+		return count;
+	}
+
+	public void setCount(int count) {
+		this.count = count;
 	}
 
 }
